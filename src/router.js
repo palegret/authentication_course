@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
+
 import Dashboard from './views/Dashboard.vue'
-import RegisterUser from './views/RegisterUser.vue'
+import Home from './views/Home.vue'
 import LoginUser from './views/LoginUser.vue'
+import RegisterUser from './views/RegisterUser.vue'
 
 Vue.use(Router)
 
@@ -36,11 +37,13 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  const routeRequiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const loggedIn = localStorage.getItem('user')
 
-  if (to.matched.some(record => record.meta.requiresAuth) && !loggedIn) {
+  if (routeRequiresAuth && !loggedIn) {
     next('/')
   }
+
   next()
 })
 

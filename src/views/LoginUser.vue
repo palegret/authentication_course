@@ -26,7 +26,7 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       email: '',
       password: '',
@@ -34,7 +34,7 @@ export default {
     }
   },
   methods: {
-    login () {
+    login() {
       this.$store
         .dispatch('login', {
           email: this.email,

@@ -11,9 +11,7 @@ export default {
   props: {
     event: {
       type: Object,
-      default: () => {
-        return {}
-      }
+      default: () => ({})
     }
   }
 }

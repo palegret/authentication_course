@@ -35,7 +35,7 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       name: '',
       email: '',
@@ -43,16 +43,25 @@ export default {
       errors: null
     }
   },
+  computed: {
+    newUser() {
+      return {
+        name: this.name,
+        email: this.email,
+        password: this.password
+      }
+    },
+    dashboardRoute() {
+      return {
+        name: 'dashboard'
+      }
+    }
+  },
   methods: {
-    register () {
-      this.$store
-        .dispatch('register', {
-          name: this.name,
-          email: this.email,
-          password: this.password
-        })
+    register() {
+      this.$store.dispatch('register', this.newUser)
         .then(() => {
-          this.$router.push({ name: 'dashboard' })
+          this.$router.push(this.dashboardRoute)
         })
         .catch(err => {
           this.errors = err.response.data.errors

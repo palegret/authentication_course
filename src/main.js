@@ -9,7 +9,7 @@ Vue.config.productionTip = false
 new Vue({
   router,
   store,
-  created () {
+  created() {
     const userString = localStorage.getItem('user')
     if (userString) {
       const userData = JSON.parse(userString)

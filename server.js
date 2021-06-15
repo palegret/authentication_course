@@ -5,6 +5,23 @@ const bodyParser = require('body-parser')
 const fs = require('fs')
 const events = require('./db/events.json')
 
+// Middleware
+const parseToken = (req, res, next) => {
+  const bearerHeader = req.headers['authorization']
+
+  if (typeof bearerHeader !== 'undefined') {
+    const bearer = bearerHeader.split(' ')
+    const bearerToken = bearer[1]
+    req.token = bearerToken
+    next()
+  } else {
+    res.sendStatus(401)
+  }
+}
+
+// In a production app, you'll want the secret key to be an environment variable
+const JwtSecret = 'the_secret_key'
+
 const app = express()
 
 app.use(cors())
@@ -16,8 +33,8 @@ app.get('/', (req, res) => {
   })
 })
 
-app.get('/dashboard', verifyToken, (req, res) => {
-  jwt.verify(req.token, 'the_secret_key', err => {
+app.get('/dashboard', parseToken, (req, res) => {
+  jwt.verify(req.token, JwtSecret, err => {
     if (err) {
       res.sendStatus(401)
     } else {
@@ -36,6 +53,7 @@ app.post('/register', (req, res) => {
       password: req.body.password
       // In a production app, you'll want to encrypt the password
     }
+
     const data = JSON.stringify(user, null, 2)
 
     var dbUserEmail = require('./db/user.json').email
@@ -44,9 +62,11 @@ app.post('/register', (req, res) => {
     if (dbUserEmail === user.email) {
       errorsToSend.push('An account with this email already exists.')
     }
+
     if (user.password.length < 5) {
       errorsToSend.push('Password too short.')
     }
+
     if (errorsToSend.length > 0) {
       res.status(400).json({ errors: errorsToSend })
     } else {
@@ -54,8 +74,7 @@ app.post('/register', (req, res) => {
         if (err) {
           console.log(err + data)
         } else {
-          const token = jwt.sign({ user }, 'the_secret_key')
-          // In a production app, you'll want the secret key to be an environment variable
+          const token = jwt.sign({ user }, JwtSecret)
           res.json({
             token,
             email: user.email,
@@ -70,39 +89,26 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
+  if (!req.body) {
+    res.status(401).json({ error: 'Invalid login. Please try again.' })
+  }
+
   const userDB = fs.readFileSync('./db/user.json')
-  const userInfo = JSON.parse(userDB)
-  if (
-    req.body &&
-    req.body.email === userInfo.email &&
-    req.body.password === userInfo.password
-  ) {
-    const token = jwt.sign({ userInfo }, 'the_secret_key')
-    // In a production app, you'll want the secret key to be an environment variable
+  const user = JSON.parse(userDB)
+  const { body } = req
+
+  if (body.email === user.email && body.password === user.password) {
+    const token = jwt.sign({ userInfo: user }, JwtSecret)    
     res.json({
       token,
-      email: userInfo.email,
-      name: userInfo.name
+      email: user.email,
+      name: user.name
     })
   } else {
     res.status(401).json({ error: 'Invalid login. Please try again.' })
   }
 })
 
-// MIDDLEWARE
-function verifyToken (req, res, next) {
-  const bearerHeader = req.headers['authorization']
-
-  if (typeof bearerHeader !== 'undefined') {
-    const bearer = bearerHeader.split(' ')
-    const bearerToken = bearer[1]
-    req.token = bearerToken
-    next()
-  } else {
-    res.sendStatus(401)
-  }
-}
-
 app.listen(3000, () => {
-  console.log('Server started on port 3000')
+  console.log('Server started on port 3000...')
 })
