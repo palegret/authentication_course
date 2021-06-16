@@ -98,7 +98,7 @@ app.post('/login', (req, res) => {
   const { body } = req
 
   if (body.email === user.email && body.password === user.password) {
-    const token = jwt.sign({ userInfo: user }, JwtSecret)    
+    const token = jwt.sign({ userInfo: user }, JwtSecret)
     res.json({
       token,
       email: user.email,

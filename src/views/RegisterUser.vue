@@ -64,7 +64,11 @@ export default {
           this.$router.push(this.dashboardRoute)
         })
         .catch(err => {
-          this.errors = err.response.data.errors
+          if (err && err.response && err.response.data && err.response.data.error) {
+            this.error = err.response.data.error
+          } else {
+            this.error = `Error: ${JSON.stringify(err)}`
+          }
         })
     }
   }
